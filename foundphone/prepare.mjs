@@ -1,6 +1,6 @@
 /**
  * FoundPhone Studio -> Tzuyu's iPhone.
- * Removes only the 26 app IDs explicitly excluded by the project owner.
+ * Removes only the 28 app IDs explicitly excluded by the project owner.
  * Keep upstream MIT and attribution notices unchanged.
  */
 import { readFile, writeFile } from "node:fs/promises";
@@ -8,7 +8,7 @@ import { readFile, writeFile } from "node:fs/promises";
 export const REMOVED_IDS = [
   "douyin","maps","wallet","files","health","find","calculator",
   "qq","redbook","bilibili","alipay","taobao","netease","delivery",
-  "forum","whatsapp","telegram","discord","youtube","line",
+  "forum","wechat","weibo","whatsapp","telegram","discord","youtube","line",
   "snapchat","facebook","messenger","reddit","netflix","pinterest"
 ];
 const excluded = new Set(REMOVED_IDS);
