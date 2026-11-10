@@ -31,6 +31,13 @@ jobs:
       - name: Apply customized app selection
         run: node ../foundphone/prepare.mjs
         working-directory: upstream
+      - name: Install Taiwanese Traditional Chinese converter
+        run: |
+          python3 -m venv /tmp/tzuyu-i18n
+          /tmp/tzuyu-i18n/bin/pip install opencc-python-reimplemented==0.1.7
+      - name: Localize system language to Traditional Chinese (Taiwan)
+        run: /tmp/tzuyu-i18n/bin/python ../foundphone/localize_zh_tw.py
+        working-directory: upstream
       - name: Install dependencies
         run: npm ci
         working-directory: upstream
