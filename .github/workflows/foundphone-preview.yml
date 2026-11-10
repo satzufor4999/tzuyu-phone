@@ -1,0 +1,56 @@
+name: FoundPhone Studio migration validation
+on:
+  push:
+    branches: [foundphone-migration]
+    paths:
+      - 'foundphone/**'
+      - '.github/workflows/foundphone-preview.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout customized project
+        uses: actions/checkout@v4
+      - name: Checkout pinned FoundPhone Studio MIT source
+        uses: actions/checkout@v4
+        with:
+          repository: keoyyo85/FoundPhone-Studio
+          ref: 73a5dc257ae93096d394816732ec8b2a10d814fa
+          path: upstream
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: upstream/package-lock.json
+      - name: Apply customized app selection
+        run: node ../foundphone/prepare.mjs
+        working-directory: upstream
+      - name: Install dependencies
+        run: npm ci
+        working-directory: upstream
+      - name: Validate story
+        run: npm run story:validate && npm run story:test
+        working-directory: upstream
+      - name: Typecheck
+        run: npm run typecheck
+        working-directory: upstream
+      - name: Build FoundPhone player
+        run: npm run build
+        working-directory: upstream
+      - name: Validate distribution
+        run: |
+          test -f upstream/dist/index.html
+          test -f upstream/dist/LICENSE
+          test -f upstream/dist/work.json
+          node -e "const s=require('./upstream/dist/work.json'); const banned = new Set(['douyin','maps','wallet','files','health','find','calculator','qq','redbook','bilibili','alipay','taobao','netease','delivery','forum','whatsapp','telegram','discord','youtube','line','snapchat','facebook','messenger','reddit','netflix','pinterest']);if(s.apps.some(a=>banned.has(a.id))) process.exit(1)"
+      - name: Store preview build (does not replace live site)
+        uses: actions/upload-artifact@v4
+        with:
+          name: tzuyu-foundphone-preview
+          path: upstream/dist/
