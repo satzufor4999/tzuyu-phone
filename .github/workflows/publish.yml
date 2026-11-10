@@ -46,6 +46,32 @@ jobs:
           test -f _site/assets/camera-preview.mp4
           test -f _site/prologue.js
           test -f _site/prologue.css
+      - name: Checkout FoundPhone customization
+        uses: actions/checkout@v4
+        with:
+          ref: foundphone-migration
+          path: foundphone-custom
+      - name: Checkout FoundPhone Studio source
+        uses: actions/checkout@v4
+        with:
+          repository: keoyyo85/FoundPhone-Studio
+          ref: 73a5dc257ae93096d394816732ec8b2a10d814fa
+          path: foundphone-upstream
+      - name: Prepare FoundPhone app selection
+        run: node ../foundphone-custom/foundphone/prepare.mjs
+        working-directory: foundphone-upstream
+      - name: Install FoundPhone dependencies
+        run: npm ci
+        working-directory: foundphone-upstream
+      - name: Build FoundPhone preview
+        run: npm run build
+        working-directory: foundphone-upstream
+      - name: Add FoundPhone preview alongside current website
+        run: |
+          mkdir -p _site/foundphone-preview
+          cp -a foundphone-upstream/dist/. _site/foundphone-preview/
+          test -f _site/foundphone-preview/index.html
+          test -f _site/index.html
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
         with:
