@@ -4,6 +4,9 @@ on:
     branches: [main]
     paths:
       - 'tzuyu-phone-github-ready.zip'
+      - 'prologue.js'
+      - 'prologue.css'
+      - '.github/workflows/publish.yml'
   workflow_dispatch:
 
 permissions:
@@ -22,12 +25,27 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-      - name: Extract website
+      - name: Build V0.9 website from existing assets and new source
         run: |
           mkdir -p _site
           unzip -q tzuyu-phone-github-ready.zip -d _site
+          cp prologue.js prologue.css _site/
+          python3 - <<'PY'
+          from pathlib import Path
+          f=Path('_site/index.html')
+          html=f.read_text(encoding='utf-8')
+          old_head='</style></head>'
+          old_tail='</script></body></html>'
+          assert old_head in html, 'Could not find end of base stylesheet'
+          assert old_tail in html, 'Could not find base script ending'
+          html=html.replace(old_head,'</style><link rel="stylesheet" href="prologue.css"></head>',1)
+          html=html.replace(old_tail,'</script><script src="prologue.js"></script></body></html>',1)
+          f.write_text(html,encoding='utf-8')
+          PY
           test -f _site/index.html
           test -f _site/assets/camera-preview.mp4
+          test -f _site/prologue.js
+          test -f _site/prologue.css
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
         with:
