@@ -60,6 +60,13 @@ jobs:
       - name: Prepare FoundPhone app selection
         run: node ../foundphone-custom/foundphone/prepare.mjs
         working-directory: foundphone-upstream
+      - name: Install Taiwanese Traditional Chinese converter
+        run: |
+          python3 -m venv /tmp/tzuyu-i18n
+          /tmp/tzuyu-i18n/bin/pip install opencc-python-reimplemented==0.1.7
+      - name: Localize FoundPhone system interface
+        run: /tmp/tzuyu-i18n/bin/python ../foundphone-custom/foundphone/localize_zh_tw.py
+        working-directory: foundphone-upstream
       - name: Install FoundPhone dependencies
         run: npm ci
         working-directory: foundphone-upstream
