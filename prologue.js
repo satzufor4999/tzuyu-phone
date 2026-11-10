@@ -15,7 +15,7 @@ function cleanPhoneUI(h){
   ])h=h.replaceAll(from,to);
   return h;
 }
-screen = function(h,k='view'){builtinScreen(cleanPhoneUI(h),k)};
+screen = function(h,k='view'){S.dataset.phoneView='';builtinScreen(cleanPhoneUI(h),k)};
 const escapePhone=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const freshChat=()=>({step:'waiting_jeong',messages:[{thread:'sana',who:'sana',text:'今天的排练辛苦了ㅠㅠ 我先回宿舍洗澡啦',time:'22:14',id:1}],queue:[{thread:'jeongyeon',who:'jeongyeon',text:'你还在练习室吗？灯都快关了。',time:'23:36',due:Date.now()+4200}],seen:{},active:'',sequence:2,choices:{}});
 let chatState;try{chatState=JSON.parse(localStorage.getItem(CHAT_KEY))||freshChat()}catch{chatState=freshChat()}
@@ -28,7 +28,7 @@ function schedulePhone(t,who,text,time,delay){
 }
 function schedulePhoneBatch(items){items.forEach(a=>schedulePhone(...a));savePhoneChat()}
 function queueFinished(){
-  const map={sending_sana:'reply_sana',sending_night:'reply_night',sending_morning:'reply_morning',sending_noon:'reply_group',sending_mina:'reply_mina',closing:'idle'};
+  const map={sending_sana:'reply_sana',sending_night:'reply_night',sending_morning:'reply_morning',sending_noon:'reply_group',sending_mina:'reply_mina',closing:'reply_evening',sending_evening:'idle'};
   chatState.step=map[chatState.step]||chatState.step;
 }
 function processPhoneMessages(){
@@ -53,12 +53,13 @@ function phoneOptions(t){
   if(t==='jeongyeon'&&step==='reply_morning')return ['一点多','好像没睡够。'];
   if(t==='group'&&step==='reply_group')return ['不是我拿的ㅋㅋ','欧尼们快来吃早餐'];
   if(t==='mina'&&step==='reply_mina')return ['欧尼在说什么？','我们怎么了吗？'];
+  if(t==='sana'&&step==='reply_evening')return ['好呀，等你。','欧尼要请我喝草莓牛奶吗ㅋㅋ'];
   return [];
 }
 function sendPhoneReply(n){
   const t=chatState.active,opts=phoneOptions(t),step=chatState.step;
   if(!opts[n])return;
-  const time={reply_jeong:'23:37',reply_sana:'23:42',reply_night:'01:52',reply_morning:'07:41',reply_group:'07:55',reply_mina:'12:11'}[step];
+  const time={reply_jeong:'23:37',reply_sana:'23:42',reply_night:'01:52',reply_morning:'07:41',reply_group:'07:55',reply_mina:'12:11',reply_evening:'18:33'}[step];
   chatState.messages.push({thread:t,who:'me',text:opts[n],time,id:chatState.sequence++});chatState.choices[step]=n;
   if(step==='reply_jeong'){
     chatState.step='sending_sana';
@@ -103,6 +104,12 @@ function sendPhoneReply(n){
       ['mina','mina','子瑜。','12:09',6100],
       ['mina','mina','你和Sana……今天怎么了？','12:10',3300]
     ]);
+  } else if(step==='reply_evening'){
+    chatState.step='sending_evening';
+    schedulePhoneBatch([
+      ['sana','sana','ㅋㅋㅋ 那在门口见！','18:34',3200],
+      ['group','nayeon','大家快点！要一起去吃饭啦','18:35',4500]
+    ]);
   } else if(step==='reply_mina'){
     chatState.step='closing';
     schedulePhoneBatch([
@@ -131,7 +138,7 @@ function phoneThread(t,read=true){
   if(!liveThreads().includes(t))return phoneThreads();
   chatState.active=t;
   const msgs=threadMessages(t),opts=phoneOptions(t);
-  if(read)chatState.seen[t]=msgs[msgs.length-1].id;
+  chatState.seen[t]=msgs[msgs.length-1].id;
   let h=`<div class="chatTop"><button class="back" onclick="phoneThreads()">‹ 聊天</button><span>${escapePhone(contactNames[t])}</span><button class="back" onclick="home()">完成</button></div><div class="threadBody"><div class="threadAvatar">${contactFaces[t]}</div><div class="threadName">${escapePhone(contactNames[t])}</div>`;
   let previous='';
   const memberNames={jihyo:'Jihyo',nayeon:'Nayeon',momo:'Momo',jeongyeon:'Jeongyeon',dahyun:'Dahyun',chaeyoung:'Chaeyoung'};
