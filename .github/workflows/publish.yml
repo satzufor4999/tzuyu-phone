@@ -70,6 +70,12 @@ jobs:
       - name: Install FoundPhone dependencies
         run: npm ci
         working-directory: foundphone-upstream
+      - name: Verify Taiwan language and app exclusions
+        run: |
+          node -e "const fs=require('fs');const s=JSON.parse(fs.readFileSync('stories/template/story.json','utf8'));const out=new Set(['wechat','weibo','douyin','maps','wallet','files','health','find','calculator','qq','redbook','bilibili','alipay','taobao','netease','delivery','forum','whatsapp','telegram','discord','youtube','line','snapchat','facebook','messenger','reddit','netflix','pinterest']);if(s.installedApps.some(a=>out.has(typeof a==='string'?a:a.id)))process.exit(1)"
+          grep -q 'DateTimeFormat("zh-TW"' src/DeviceSystem.tsx
+          grep -q '繁體中文（台灣）' src/DeviceSystem.tsx
+        working-directory: foundphone-upstream
       - name: Build FoundPhone preview
         run: npm run build
         working-directory: foundphone-upstream
