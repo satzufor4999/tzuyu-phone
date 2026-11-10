@@ -64,7 +64,7 @@ def patch(path, old, new):
     data = file.read_text(encoding="utf-8")
     if old not in data:
         raise RuntimeError(f"Missing expected UI source in {path}: {old}")
-    file.write_text(data.replace(old, new), encoding="utf-8")
+    file.write_text(data.replace(old, new, 1), encoding="utf-8")
 
 patch("DeviceSystem.tsx", 'DateTimeFormat("zh-CN"', 'DateTimeFormat("zh-TW"')
 patch("launcher/HomeLauncher.tsx", 'DateTimeFormat("zh-CN"', 'DateTimeFormat("zh-TW"')
